@@ -44,18 +44,23 @@ function processPage() {
                         const dislikes = formatNumber(data.dislikes);
                         if (text.textContent === dislikes) return;
                         text.style.display = 'block';
+                        // make a clone and hide original dislike text
+                        // because youtube checks for changes in these components and reverts them
                         const clone = text.cloneNode(true);
+
                         clone.textContent = dislikes;
                         clone.style.fontSize = '14px';
-                        clone.style.position = 'absolute';
+                        clone.style.textAlign = 'center';
                         clone.style.display = 'block';
+                        clone.style.fontWeight = 400;
                         clone.className = 'dislike-text-new-reshorts';
-                        const buttons = document.querySelectorAll('#dislike-button');
-                        for (const button of buttons) {
+
+                        for (const button of document.querySelectorAll('#dislike-button')) {
                             if (isInViewport(button)) {
                                 button.appendChild(clone);
                             }
                         }
+
                         text.style.display = 'none';
                     });
             }
