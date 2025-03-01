@@ -1,3 +1,3 @@
 # ReShorts
 
-Return YouTube Dislikes, but supports YouTube shorts functionality.
+Return YouTube Dislikes to Shorts.
