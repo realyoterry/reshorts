@@ -1,11 +1,88 @@
+// made with Return YouTube Dislike API
+// https://returnyoutubedislikeapi.com/swagger/index.html
+
 processPage();
 document.addEventListener('yt-navigate-finish', processPage);
 
 function processPage() {
+    // youtube videos
+    if (location.pathname.toLowerCase().startsWith('/watch')) {
+        const observer = new MutationObserver((_, obs) => {
+            const button = document.querySelector('.yt-spec-touch-feedback-shape__fill');
+
+            if (button) {
+                obs.disconnect();
+
+                fetch(`https://returnyoutubedislikeapi.com/votes?videoId=${new URLSearchParams(location.search).get('v')}`)
+                    .then(res => res.json())
+                    .then((data) => {
+                        const parent = document.querySelector('dislike-button-view-model .yt-spec-button-shape-next--segmented-end');
+                        if (!parent || parent.querySelector('.dislike-count')) return;
+
+                        const dislikes = data.dislikes;
+                        const text = document.createElement('div');
+                        let updatedDislikes = data.dislikes;
+
+                        parent.className = 'yt-spec-button-shape-next yt-spec-button-shape-next--tonal yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m yt-spec-button-shape-next--icon-leading yt-spec-button-shape-next--segmented-end';
+                        text.className = 'dislike-count yt-spec-button-shape-next__button-text-content';
+
+                        if (!isDisliked()) {
+                            text.textContent = formatNumber(dislikes);
+                        } else {
+                            updatedDislikes++;
+                            text.textContent = formatNumber(updatedDislikes);
+                        }
+
+                        parent.appendChild(text);
+
+                        document.querySelector('dislike-button-view-model').addEventListener('click', () => {
+                            if (isDisliked()) {
+                                updatedDislikes++;
+                                text.textContent = formatNumber(updatedDislikes);
+                                parent.appendChild(text);
+                            } else {
+                                updatedDislikes--;
+                                text.textContent = formatNumber(updatedDislikes);
+                                parent.appendChild(text);
+
+                                const observer = new MutationObserver((_, obs) => {
+                                    const newText = parent.querySelector('.dislike-count');
+
+                                    if (!newText) {
+                                        obs.disconnect();
+                                        parent.appendChild(text);
+                                    }
+                                });
+
+                                observer.observe(document.body, { childList: true, subtree: true });
+                                setTimeout(observer.disconnect, 5000);
+                            }
+                        });
+                    });
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+        setTimeout(() => observer.disconnect(), 5000); // auto-disconnect
+    }
+
     // youtube shorts
     if (location.pathname.toLowerCase().startsWith('/shorts')) {
         const observer = new MutationObserver((_, obs) => {
-            const text = getButtons();
+            let text;
+
+            // make sure to hide preloaded 'Dislike' labels
+            let elements = document.querySelectorAll('#dislike-button > yt-button-shape > label > div > span');
+
+            for (let element of elements) {
+                element.style.display = 'block';
+
+                if (!isInViewport(element)) {
+                    element.style.display = 'none';
+                } else {
+                    text = element;
+                }
+            }
 
             if (text) {
                 text.style.display = 'none';
@@ -15,10 +92,15 @@ function processPage() {
                     .then(res => res.json())
                     .then((data) => {
                         const dislikes = formatNumber(data.dislikes);
-                        if (text.textContent === dislikes) return;
+                        const currentDislikes = document.getElementsByClassName('dislike-text-new-reshorts');
 
-                        // show original before cloning
-                        text.style.display = 'block';
+                        if (currentDislikes[0]) {
+                            for (let dislike of currentDislikes) {
+                                if (isInViewport(dislike)) {
+                                    return;
+                                }
+                            }
+                        }
 
                         // make a clone and hide original dislike text because youtube checks
                         // for changes in these components and reverts them if they detect any
@@ -29,6 +111,7 @@ function processPage() {
                         clone.style.textAlign = 'center';
                         clone.style.display = 'block';
                         clone.style.fontWeight = 400;
+                        clone.style.opacity = 1;
                         clone.className = 'dislike-text-new-reshorts';
 
                         for (const button of document.querySelectorAll('#dislike-button')) {
@@ -36,8 +119,6 @@ function processPage() {
                                 button.appendChild(clone);
                             }
                         }
-
-                        text.style.display = 'none';
                     });
             }
         });
@@ -67,12 +148,12 @@ function isInViewport(element) {
     );
 }
 
-function getButtons() {
-    let elements = document.querySelectorAll('#dislike-button > yt-button-shape > label > div > span');
+function isDisliked() {
+    const parent = document.querySelector('dislike-button-view-model .yt-spec-button-shape-next--segmented-end');
 
-    for (let element of elements) {
-        if (isInViewport(element)) {
-            return element;
-        }
+    if (parent.attributes['aria-pressed'].value === 'true') {
+        return true;
+    } else {
+        return false;
     }
 }
