@@ -1,3 +1,3 @@
 # ReShorts
 
-Return YouTube Dislikes to Shorts.
+Returns YouTube Dislikes to videos & shorts using the RYD API. A simpler working alternative to [Anarios/return-youtube-dislike](https://github.com/Anarios/return-youtube-dislike/tree/main/Extensions).
