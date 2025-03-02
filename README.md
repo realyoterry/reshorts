@@ -16,4 +16,8 @@ ReShorts returns dislikes on YouTube shorts the same way as it does on videos, b
 
 ---
 
+Here's a quick video preview of the extension:
+
+
+
 Made by Terry Kim.
