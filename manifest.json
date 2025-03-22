@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "ReShorts",
+    "name": "ReDislike",
     "version": "1.0.0",
-    "description": "A version of Return YouTube Dislikes, that supports YouTube shorts.",
+    "description": "A more lightweight & robust alternative to Return YouTube Dislike that returns dislikes to YouTube videos & shorts.",
     "host_permissions": [
         "https://returnyoutubedislikeapi.com/votes?videoId=*"
     ],

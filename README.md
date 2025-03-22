@@ -1,18 +1,18 @@
-# ReShorts
+# ReDislike
 
-Returns YouTube Dislikes to videos & shorts using the RYD API. A simpler working alternative to [Anarios/return-youtube-dislike](https://github.com/Anarios/return-youtube-dislike).
+A faster and more efficient alternative to Return YouTube Dislike that brings back dislike counts on both YouTube videos and Shorts. While the original Return YouTube Dislike extension returns dislikes on regular videos, this version is specifically designed to also work with YouTube Shorts.
 
 ## Videos
 
 ![Preview](images/preview1.png)
 
-ReShorts returns dislikes on YouTube videos by fetching data from the [Return YouTube Dislike API](https://returnyoutubedislike.com/docs/endpoints) and modifying the class names so the text is successfully rendered.
+ReDislike returns dislikes on YouTube videos by fetching data from the [Return YouTube Dislike API](https://returnyoutubedislike.com/docs/endpoints) and modifying the class names so the text is successfully rendered.
 
 ## Shorts
 
 ![Preview](images/preview2.png)
 
-ReShorts returns dislikes on YouTube shorts the same way as it does on videos, but creates **clones** instead of modifying the text content. This is because YouTube listens for changes in their UI, and if it is an unexpected change, it will revert the change, meaning replacing the text content won't work.
+ReDislike returns dislikes on YouTube shorts the same way as it does on videos, but creates **clones** instead of modifying the text content. This is because YouTube listens for changes in their UI, and if it is an unexpected change, it will revert the change, meaning replacing the text content won't work.
 
 ---
 
