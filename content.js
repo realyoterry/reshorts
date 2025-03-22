@@ -1,10 +1,10 @@
 // made with Return YouTube Dislike API
 // https://returnyoutubedislikeapi.com/swagger/index.html
 
-processPage();
+processPage(true);
 document.addEventListener('yt-navigate-finish', processPage);
 
-function processPage() {
+function processPage(first = false) {
     // youtube videos
     if (location.pathname.toLowerCase().startsWith('/watch')) {
         const observer = new MutationObserver((_, obs) => {
@@ -68,63 +68,77 @@ function processPage() {
 
     // youtube shorts
     if (location.pathname.toLowerCase().startsWith('/shorts')) {
-        const observer = new MutationObserver((_, obs) => {
-            let text;
-
-            // make sure to hide preloaded 'Dislike' labels
-            let elements = document.querySelectorAll('#dislike-button > yt-button-shape > label > div > span');
-
-            for (let element of elements) {
-                element.style.display = 'block';
-
-                if (!isInViewport(element)) {
-                    element.style.display = 'none';
-                } else {
-                    text = element;
+        if (location.pathname.toLowerCase().startsWith('/shorts')) {
+            const observer = new MutationObserver((_, obs) => {
+                const ads = document.querySelectorAll('dislike-button-view-model > toggle-button-view-model > button-view-model > label > div');
+                const buttons = document.querySelectorAll('#dislike-button > yt-button-shape > label > div > span');
+    
+                let text;
+                let isAd = false;
+    
+                if (ads && ads[0]) {
+                    for (const ad of ads) {
+                        if (isInViewport(ad) === true) {
+                            text = ad;
+                            isAd = true;
+                        }
+                    }
                 }
-            }
-
-            if (text) {
-                text.style.display = 'none';
-                obs.disconnect();
-
-                fetch(`https://returnyoutubedislikeapi.com/votes?videoId=${location.pathname.split('/shorts/')[1]}`)
-                    .then(res => res.json())
-                    .then((data) => {
-                        const dislikes = formatNumber(data.dislikes);
-                        const currentDislikes = document.getElementsByClassName('dislike-text-new-reshorts');
-
-                        if (currentDislikes[0]) {
-                            for (let dislike of currentDislikes) {
-                                if (isInViewport(dislike)) {
-                                    return;
+    
+                for (const button of buttons) {
+                    button.style.display = 'block';
+    
+                    if (isInViewport(button) === true) {
+                        text = button;
+                    } else {
+                        button.style.display = 'none';
+                    }
+                }
+    
+                if (text) {
+                    obs.disconnect();
+                    text.style.display = 'none';
+    
+                    fetch(`https://returnyoutubedislikeapi.com/votes?videoId=${location.pathname.split('/shorts/')[1]}`)
+                        .then((res) => res.json())
+                        .then((res) => {
+                            const dislikes = formatNumber(res.dislikes);
+                            const checks = document.querySelectorAll('.returnDislikesButton');
+    
+                            if (checks[0]) {
+                                for (let check of checks) {
+                                    if (isInViewport(check)) {
+                                        return;
+                                    }
                                 }
                             }
-                        }
-
-                        // make a clone and hide original dislike text because youtube checks
-                        // for changes in these components and reverts them if they detect any
-                        const clone = text.cloneNode(true);
-
-                        clone.textContent = dislikes;
-                        clone.style.fontSize = '14px';
-                        clone.style.textAlign = 'center';
-                        clone.style.display = 'block';
-                        clone.style.fontWeight = 400;
-                        clone.style.opacity = 1;
-                        clone.className = 'dislike-text-new-reshorts';
-
-                        for (const button of document.querySelectorAll('#dislike-button')) {
-                            if (isInViewport(button)) {
-                                button.appendChild(clone);
+    
+                            const clone = text.cloneNode(true);
+    
+                            clone.textContent = dislikes;
+                            clone.style.display = 'block';
+                            clone.className = 'returnDislikesButton';
+                            clone.style.fontSize = '14px';
+                            clone.style.textAlign = 'center';
+                            clone.style.fontWeight = 400;
+    
+                            if (first === true) {
+                                document.querySelectorAll('#dislike-button')[0].appendChild(clone);
+                            } else {
+                                for (const button of isAd ? document.querySelectorAll('dislike-button-view-model') : document.querySelectorAll('#dislike-button')) {
+                                    if (isInViewport(button)) {
+                                        button.appendChild(clone);
+                                    }
+                                }
                             }
-                        }
-                    });
-            }
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
-        setTimeout(() => observer.disconnect(), 5000); // auto-disconnect
+                        });
+                }
+            });
+    
+            observer.observe(document.body, { childList: true, subtree: true });
+            // auto disconnect after 5 seconds of waiting
+            setTimeout(() => observer.disconnect(), 5000);
+        }
     }
 }
 
